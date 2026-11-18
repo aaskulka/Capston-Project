@@ -91,6 +91,9 @@ def test_explain_alert(client):
         assert explanation["alert_id"] == created["id"]
         assert ALERT["severity"] in explanation["explanation"]
         assert ALERT["metric_name"] in explanation["explanation"]
+        assert explanation["explanation"].endswith(
+            "Acknowledged by: Not yet acknowledged."
+        )
         assert datetime.fromisoformat(explanation["generated_at"]).tzinfo is not None
 
         response = method("/alerts/999/explain")
@@ -262,3 +265,13 @@ def test_explain_alert_with_zero_threshold_does_not_crash(
     assert response.status_code == 200 
 
     assert "threshold of 0.0" in response.json()["explanation"]
+
+    # --- Regression test for the resolved_by bug --- 
+
+def test_explain_alert_acknowledgement_defaults_when_unresolved(client: TestClient) -> None: 
+    alert = _create_alert(client, severity="critical")
+    response = client.post(f"/alerts/{alert['id']}/explain")
+    assert response.status_code == 200
+    assert response.json()["explanation"].endswith(
+        "Acknowledged by: Not yet acknowledged."
+    )
