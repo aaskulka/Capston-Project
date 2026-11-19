@@ -14,6 +14,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 @router.post("/", response_model=AlertOut, status_code=status.HTTP_201_CREATED)
 def create_alert(alert: AlertCreate, db: Session = Depends(get_db)) -> Alert:
+    """Create an alert and return the created alert."""
     db_alert = Alert(**alert.model_dump())
     db.add(db_alert)
     db.commit()
