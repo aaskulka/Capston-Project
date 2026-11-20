@@ -35,7 +35,6 @@ def get_alert(alert_id: int, db: Session = Depends(get_db)) -> Alert:
     return alert
 
 
-@router.get("/{alert_id}/explain", response_model=ExplainResponse)
 @router.post("/{alert_id}/explain", response_model=ExplainResponse)
 def explain_alert(alert_id: int, db: Session = Depends(get_db)) -> ExplainResponse:
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
