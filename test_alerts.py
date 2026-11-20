@@ -84,21 +84,23 @@ def test_get_alert_by_id(client):
 def test_explain_alert(client):
     created = client.post("/alerts/", json=ALERT).json()
 
-    for method in (client.get, client.post):
-        response = method(f"/alerts/{created['id']}/explain")
-        assert response.status_code == 200
-        explanation = response.json()
-        assert explanation["alert_id"] == created["id"]
-        assert ALERT["severity"] in explanation["explanation"]
-        assert ALERT["metric_name"] in explanation["explanation"]
-        assert explanation["explanation"].endswith(
-            "Acknowledged by: Not yet acknowledged."
-        )
-        assert datetime.fromisoformat(explanation["generated_at"]).tzinfo is not None
+    response = client.post(f"/alerts/{created['id']}/explain")
+    assert response.status_code == 200
+    explanation = response.json()
+    assert explanation["alert_id"] == created["id"]
+    assert ALERT["severity"] in explanation["explanation"]
+    assert ALERT["metric_name"] in explanation["explanation"]
+    assert explanation["explanation"].endswith(
+        "Acknowledged by: Not yet acknowledged."
+    )
+    assert datetime.fromisoformat(explanation["generated_at"]).tzinfo is not None
 
-        response = method("/alerts/999/explain")
-        assert response.status_code == 404
-        assert response.json() == {"detail": "Alert not found"}
+    response = client.post("/alerts/999/explain")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Alert not found"}
+
+    response = client.get(f"/alerts/{created['id']}/explain")
+    assert response.status_code == 405
 
 # --- Edge cases added manually --- 
 
